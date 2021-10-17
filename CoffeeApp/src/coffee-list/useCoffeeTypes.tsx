@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { State } from 'ionicons/dist/types/stencil-public-runtime';
+import { useEffect, useReducer, useState } from 'react';
 import { getLogger } from '../core';
 import { CoffeeProps } from './CoffeeProps';
 import { getCoffees } from './coffeeTypeApi';
@@ -15,13 +16,38 @@ export interface CoffeesProps extends CoffeesState {
     addCoffee: () => void,
 };
 
-export const useCoffees: () => CoffeesProps = () => {
-    const [state, setState] = useState<CoffeesState>({
-        coffees: undefined,
-        fetching: false,
-        fetchingError: undefined,
-    });
+interface ActionProps {
+    type: string,
+    payload?: any,
+};
 
+const initialState: CoffeesState = {
+    coffees: undefined,
+    fetching: false,
+    fetchingError: undefined,
+};
+  
+const FETCH_COFFEES_STARTED = 'FETCH_COFFEES_STARTED';
+const FETCH_COFFEES_SUCCEEDED = 'FETCH_COFFEES_SUCCEEDED';
+const FETCH_COFFEES_FAILED = 'FETCH_COFFEES_FAILED';
+
+const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState = 
+    (state, {type, payload}) => {
+        switch(type) {
+            case FETCH_COFFEES_STARTED:
+                return {...state, fetching:true};
+            case FETCH_COFFEES_SUCCEEDED:
+                return {...state, coffees: payload.coffees, fetching: false};
+            case FETCH_COFFEES_FAILED:
+                return {...state, fetchingError: payload.error, fetching: false};
+            default:
+                return state;
+        }
+
+    };
+
+export const useCoffees: () => CoffeesProps = () => {
+    const [state, dispatch] = useReducer(reducer, initialState);
     const { coffees, fetching, fetchingError } = state;
     const addCoffee = () => {
         log('addCoffee - TODO');
@@ -45,20 +71,16 @@ export const useCoffees: () => CoffeesProps = () => {
         async function fetchCoffees() {
             try{
                 log('fetchingCoffees started');
-                setState({...state, fetching: true});
+                dispatch({type: FETCH_COFFEES_STARTED});
                 const coffees =await getCoffees();
                 log('fetchCoffees succeeded');
                 if(!canceled) {
-                    setState({...state, coffees, fetching: false});
+                    dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees } });
                 }
             } catch(error: any) {
                 log('fetchCoffees failed');
-                if(!canceled) {
-                    setState({...state, fetchingError:error, fetching: false});
-                }
+                dispatch({ type: FETCH_COFFEES_FAILED, payload: {error} });
             }
-
         }
     }
-
 };
