@@ -3,7 +3,7 @@ import { getLogger } from '../core';
 import { CoffeeProps } from './CoffeeProps';
 import { getCoffees } from './coffeeTypeApi';
 
-const log = getLogger('useItems');
+const log = getLogger('useCoffees');
 
 export interface CoffeesState {
     coffees?: CoffeeProps[],

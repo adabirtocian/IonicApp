@@ -12,6 +12,7 @@ export const getCoffees: () => Promise<CoffeeProps[]> | any = () => {
         .get(`${baseUrl}/coffee`)
         .then(res => {
             log('getCoffees - succeeded');
+            console.log(res.data);
             return Promise.resolve(res.data);
         })
         .catch(err => {
