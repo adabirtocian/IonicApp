@@ -8,7 +8,10 @@ import {
     IonLoading,
     IonPage,
     IonTitle, IonToggle,
-    IonToolbar
+    IonToolbar,
+    IonItem,
+    IonLabel,
+    IonItemDivider
 } from '@ionic/react';
 import { getLogger } from '../core';
 import {CoffeeContext} from "./CoffeeProvider";
@@ -33,8 +36,6 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
         const routeId = match.params.id;
         const coffee = coffees?.find(c => c.id?.toString() === routeId);
         setCoffee(coffee);
-        console.log("edit coffee");
-        console.log(coffee);
 
         if(coffee) {
             setOriginName(coffee.originName);
@@ -44,8 +45,9 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
+        console.log(originName, roastedDate, popular);
         console.log(coffee);
-        const editedCoffee = coffee ? {...coffee, originName} : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
+        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular} : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
         saveCoffee && saveCoffee(editedCoffee).then(() => history.goBack());
     };
     log('render');
@@ -65,7 +67,10 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
             <IonContent>
                 <IonInput value={originName} placeholder="originName" onIonChange={e => setOriginName(e.detail.value || '')} />
                 <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY" onIonChange={e => setRoastedDate(e.detail.value || '')} />
-                <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)} />
+                <IonItemDivider>
+                    <IonLabel>Popular coffee </IonLabel>
+                    <IonToggle checked={popular} onIonChange={e => {console.log(e.detail.checked); setPopular(e.detail.checked)} }/>
+                </IonItemDivider>
                 <IonLoading isOpen={saving} />
                 {savingError && (
                     <div>{savingError.message || 'Failed to save coffee'}</div>
