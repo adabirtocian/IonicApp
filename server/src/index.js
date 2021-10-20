@@ -34,7 +34,7 @@ class Coffee {
   constructor({ id, originName, roastedDate, popular, date }) {
     this.id = id;
     this.originName = originName;
-    this.roastedDate = date;
+    this.roastedDate = roastedDate;
     this.popular = popular;
     this.date = date
   }
@@ -42,14 +42,14 @@ class Coffee {
 
 const items = [];
 for (let i = 0; i < 6; i++) {
-  items.push(new Coffee({ id: `${i}`, originName: `coffee ${i}`, roastedDate: new Date(Date.now() + i), popular: true, date: new Date(Date.now() + i)}));
+  items.push(new Coffee({ id: i, originName: `coffee ${i}`, roastedDate: new Date(Date.now() + i), popular: true, date: new Date(Date.now() + i)}));
 }
 let lastUpdated = items[items.length - 1].date;
 let lastId = items[items.length - 1].id;
 const pageSize = 10;
 
 const broadcast = data =>
-  wss.clients.forEach(client => {
+  wss.clients.forEach(client => { // access of clients connected to the server
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(data));
     }
@@ -58,16 +58,16 @@ const broadcast = data =>
 const router = new Router();
 
 router.get('/coffee', ctx => {
-  const ifModifiedSince = ctx.request.get('If-Modif ied-Since');
+  const ifModifiedSince = ctx.request.get('If-Modified-Since');
   if (ifModifiedSince && new Date(ifModifiedSince).getTime() >= lastUpdated.getTime() - lastUpdated.getMilliseconds()) {
     ctx.response.status = 304; // NOT MODIFIED
     return;
   }
-  const text = ctx.request.query.text;
+  const originName = ctx.request.query.originName;
   const page = parseInt(ctx.request.query.page) || 1;
   ctx.response.set('Last-Modified', lastUpdated.toUTCString());
   const sortedItems = items
-    .filter(item => text ? item.text.indexOf(text) !== -1 : true)
+    .filter(item => originName ? item.originName.indexOf(originName) !== -1 : true)
     .sort((n1, n2) => -(n1.date.getTime() - n2.date.getTime()));
   const offset = (page - 1) * pageSize;
   // ctx.response.body = {
@@ -93,19 +93,17 @@ router.get('/coffee/:id', async (ctx) => {
 
 const createItem = async (ctx) => {
   const item = ctx.request.body;
-  if (!item.text) { // validation
+  if (!item.originName) { // validation
     ctx.response.body = { issue: [{ error: 'Text is missing' }] };
     ctx.response.status = 400; //  BAD REQUEST
     return;
   }
-  item.id = `${parseInt(lastId) + 1}`;
+  item.id = lastId + 1;
   lastId = item.id;
-  item.date = new Date();
-  item.version = 1;
   items.push(item);
   ctx.response.body = item;
   ctx.response.status = 201; // CREATED
-  broadcast({ event: 'created', payload: { item } });
+  broadcast({ event: 'created', payload: { item } }); // call broadcast function: clients receive notifications with the new item
 };
 
 router.post('/coffee', async (ctx) => {
@@ -113,16 +111,17 @@ router.post('/coffee', async (ctx) => {
 });
 
 router.put('/coffee/:id', async (ctx) => {
-  const id = ctx.params.id;
+  const id = parseInt(ctx.params.id);
   const item = ctx.request.body;
   item.date = new Date();
   const itemId = item.id;
-  if (itemId && id !== item.id) {
+
+  if (id !== item.id) {
     ctx.response.body = { issue: [{ error: `Param id and body id should be the same` }] };
     ctx.response.status = 400; // BAD REQUEST
     return;
   }
-  if (!itemId) {
+  if (itemId === undefined) {
     await createItem(ctx);
     return;
   }
@@ -138,7 +137,6 @@ router.put('/coffee/:id', async (ctx) => {
     ctx.response.status = 409; // CONFLICT
     return;
   }
-  item.version++;
   items[index] = item;
   lastUpdated = new Date();
   ctx.response.body = item;
@@ -158,15 +156,6 @@ router.del('/coffee/:id', ctx => {
   ctx.response.status = 204; // no content
 });
 
-setInterval(() => {
-  lastUpdated = new Date();
-  lastId = `${parseInt(lastId) + 1}`;
-  const item = new Coffee({ id: lastId, originName: `coffee ${lastId}`, roastedDate:lastUpdated, popular:true, date: lastUpdated});
-  items.push(item);
-  console.log(`
-   ${item.originName}`);
-  broadcast({ event: 'created', payload: { item } });
-}, 150000);
 
 app.use(router.routes());
 app.use(router.allowedMethods());

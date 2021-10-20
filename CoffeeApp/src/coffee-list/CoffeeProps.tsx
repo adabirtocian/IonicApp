@@ -1,5 +1,5 @@
 export interface CoffeeProps {
-    id: number;
+    id?: number;
     originName: string;
     roastedDate: Date;
     popular: boolean;
