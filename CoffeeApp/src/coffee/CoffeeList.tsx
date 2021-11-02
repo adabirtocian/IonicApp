@@ -5,10 +5,19 @@ import Coffee from "./Coffee";
 import { getLogger } from '../core';
 import { add } from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
+import { useAppState } from './useAppState';
+import { useNetwork } from './useNetwork';
+import { useBackgroundTask } from './useBackgroundTask';
 
 const log = getLogger('CoffeeList');
 
 const CoffeeList: React.FC<RouteComponentProps> = ({ history }) => {
+    const { appState } = useAppState();
+    const { networkStatus } = useNetwork();
+    useBackgroundTask(() => new Promise(resolve => {
+        console.log('My Background Task');
+        resolve();
+    }));
     const {coffees, fetching, fetchingError} = useContext(CoffeeContext);
     log('render');
     return (
@@ -20,6 +29,8 @@ const CoffeeList: React.FC<RouteComponentProps> = ({ history }) => {
             </IonHeader>
             <IonContent>
                 <IonLoading isOpen={fetching} message="Fetching coffees"/>
+                <div>App state: {appState.isActive ? "active" : "not active"}</div>
+                <div>Network status: { networkStatus.connected ?  "online" : "offline"}</div>
                 {coffees && (
                     <IonList>
                         {coffees.map( ({_id, originName, roastedDate, popular}) =>
