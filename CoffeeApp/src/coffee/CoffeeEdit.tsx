@@ -34,7 +34,7 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     useEffect(() => {
         log('useEffect');
         const routeId = match.params.id;
-        const coffee = coffees?.find(c => c.id?.toString() === routeId);
+        const coffee = coffees?.find(c => c._id?.toString() === routeId);
         setCoffee(coffee);
 
         if(coffee) {

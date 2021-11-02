@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, {useCallback, useContext, useEffect, useReducer} from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../core';
 import { CoffeeProps } from './CoffeeProps';
-import { createCoffee, getCoffees, updateCoffee } from './CoffeeApi';
+import { createCoffee, getCoffees, updateCoffee, newWebSocket } from './CoffeeApi';
+import {AuthContext} from "../auth";
 
 const log = getLogger('CoffeeProvider');
 
@@ -48,7 +49,7 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
             case SAVE_COFFEE_SUCCEEDED:
                 const coffees = [...(state.coffees || [])];
                 const coffee = payload.coffee;
-                const index = coffees.findIndex(c => c.id === coffee.id);
+                const index = coffees.findIndex(c => c._id === coffee.id);
                 if(index === -1) {
                     coffees.splice(0, 0, coffee);
                 } else {
@@ -70,10 +71,12 @@ interface CoffeeProviderProps {
 }
 
 export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
+    const { token } = useContext(AuthContext);
     const [state, dispatch] = useReducer(reducer, initialState);
     const { coffees, fetching, fetchingError, saving, savingError} = state;
-    useEffect(getCoffeesEffect, []);
-    const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, []);
+    useEffect(getCoffeesEffect, [token]);
+    useEffect(wsEffect, [token]);
+    const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
     const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee };
     log('returns');
     return (
@@ -90,10 +93,14 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
         }
 
         async function fetchCoffees() {
+            if(!token?.trim())
+            {
+                return;
+            }
             try{
                 log('fetchingCoffees started');
                 dispatch({type: FETCH_COFFEES_STARTED});
-                const coffees =await getCoffees();
+                const coffees =await getCoffees(token);
                 log('fetchCoffees succeeded');
                 if(!canceled) {
                     dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees } });
@@ -109,16 +116,36 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
         try {
             log('saveCoffee started');
             dispatch({type: SAVE_COFFEE_STARTED});
-            console.log(coffee.id);
-            const savedCoffee = await (coffee.id !== undefined ? updateCoffee(coffee) : createCoffee(coffee));
-            // const savedCoffee = await (updateCoffee(coffee));
-
+            const savedCoffee = await (coffee._id !== undefined ? updateCoffee(token, coffee) : createCoffee(token, coffee));
             log('saveCoffee succeeded');
             dispatch({type: SAVE_COFFEE_SUCCEEDED, payload: {coffee: savedCoffee}});
 
         } catch(error) {
             log('saveCoffee failed');
             dispatch({type: SAVE_COFFEE_FAILED, payload: { error }});
+        }
+    }
+
+    function wsEffect() {
+        let canceled = false;
+        log('wsEffect - connecting');
+        let closeWebSocket: () => void;
+        if (token?.trim()) {
+            closeWebSocket = newWebSocket(token, message => {
+                if (canceled) {
+                    return;
+                }
+                const { type, payload: coffee } = message;
+                log(`ws message, item ${type}`);
+                if (type === 'created' || type === 'updated') {
+                    dispatch({ type: SAVE_COFFEE_SUCCEEDED, payload: { coffee } });
+                }
+            });
+        }
+        return () => {
+            log('wsEffect - disconnecting');
+            canceled = true;
+            closeWebSocket?.();
         }
     }
 };

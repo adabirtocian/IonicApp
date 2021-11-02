@@ -11,7 +11,6 @@ const log = getLogger('CoffeeList');
 const CoffeeList: React.FC<RouteComponentProps> = ({ history }) => {
     const {coffees, fetching, fetchingError} = useContext(CoffeeContext);
     log('render');
-
     return (
         <IonPage>
             <IonHeader>
@@ -23,12 +22,12 @@ const CoffeeList: React.FC<RouteComponentProps> = ({ history }) => {
                 <IonLoading isOpen={fetching} message="Fetching coffees"/>
                 {coffees && (
                     <IonList>
-                        {coffees.map( ({id, originName, roastedDate, popular}) =>
-                            <Coffee key={id} id={id} originName={originName} roastedDate={roastedDate} popular={popular}
+                        {coffees.map( ({_id, originName, roastedDate, popular}) =>
+                            <Coffee key={_id} _id={_id} originName={originName} roastedDate={roastedDate} popular={popular}
                                     onEdit={
-                                        id => {
-                                            console.log(id);
-                                            history.push(`/coffee/${id}`)
+                                        _id => {
+                                            console.log(_id);
+                                            history.push(`/coffee/${_id}`)
                                         }
                                     } /> )}
                     </IonList>    
