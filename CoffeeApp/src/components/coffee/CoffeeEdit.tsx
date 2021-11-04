@@ -13,7 +13,7 @@ import {
     IonLabel,
     IonItemDivider
 } from '@ionic/react';
-import { getLogger } from '../core';
+import { getLogger } from '../../core';
 import {CoffeeContext} from "./CoffeeProvider";
 import { RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
@@ -53,23 +53,18 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
 
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar>
-                    <IonTitle>Edit</IonTitle>
-                    <IonButtons slot="end">
-                        <IonButton onClick={handleSave}>
-                            Save
-                        </IonButton>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
             <IonContent>
-                <IonInput value={originName} placeholder="originName" onIonChange={e => setOriginName(e.detail.value || '')} />
-                <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY" onIonChange={e => setRoastedDate(e.detail.value || '')} />
+                <IonInput value={originName} placeholder="originName"
+                          onIonChange={e => setOriginName(e.detail.value || '')} />
+                <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY"
+                             onIonChange={e => setRoastedDate(e.detail.value || '')} />
                 <IonItemDivider>
                     <IonLabel>Popular coffee </IonLabel>
                     <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)}/>
                 </IonItemDivider>
+                <IonButtons>
+                    <IonButton onClick={handleSave}>Save</IonButton>
+                </IonButtons>
                 <IonLoading isOpen={saving} />
                 {savingError && (
                     <div>{savingError.message || 'Failed to save coffee'}</div>

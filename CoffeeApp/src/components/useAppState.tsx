@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {App, AppState} from "@capacitor/app";
 
 const initialState = {
-  isActive: true,
+  isActive: true
 }
 
 export const useAppState = () => {
@@ -18,7 +18,6 @@ export const useAppState = () => {
         }
 
         function handleAppStateChange(state: AppState) {
-            // console.log('useAppState - state changed', state);
             if(!canceled){
                 setAppState(state);
             }

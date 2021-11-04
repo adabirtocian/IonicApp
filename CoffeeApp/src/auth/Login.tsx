@@ -24,7 +24,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
     log('render');
 
     if (isAuthenticated) {
-        return <Redirect to={{ pathname: '/' }} />
+        return <Redirect to={{ pathname: '/home' }} />
     }
     return (
         <IonPage>

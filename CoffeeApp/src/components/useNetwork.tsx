@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import {Network, NetworkStatus} from "@capacitor/network";
+import { SetStateAction, useEffect, useState} from 'react';
+import {Network} from "@capacitor/network";
 
 const initialState = {
     connected: false,
@@ -17,8 +17,7 @@ export const useNetwork = () => {
             handler.remove();
         }
 
-        function handleNetworkStatusChange(status: NetworkStatus) {
-            // console.log('useNetwork - status change', status);
+        function handleNetworkStatusChange(status: SetStateAction<{ connected: boolean; connectionType: string; }>) {
             if (!canceled) {
                 setNetworkStatus(status);
             }

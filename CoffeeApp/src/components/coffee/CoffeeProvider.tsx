@@ -1,9 +1,9 @@
 import React, {useCallback, useContext, useEffect, useReducer, useState} from 'react';
 import PropTypes from 'prop-types';
-import { getLogger } from '../core';
+import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 import { createCoffee, getCoffees, updateCoffee, newWebSocket } from './CoffeeApi';
-import {AuthContext} from "../auth";
+import {AuthContext} from "../../auth";
 import {IonContent, IonInfiniteScroll, IonInfiniteScrollContent} from "@ionic/react";
 
 const log = getLogger('CoffeeProvider');

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { authConfig, getLogger, withLogs } from '../core';
+import { authConfig, getLogger, withLogs } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 
 const baseUrl = 'localhost:3000';
