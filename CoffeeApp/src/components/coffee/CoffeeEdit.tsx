@@ -17,6 +17,7 @@ import { getLogger } from '../../core';
 import {CoffeeContext} from "./CoffeeProvider";
 import { RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
+import {Link, Redirect} from "react-router-dom";
 
 const log = getLogger('CoffeeEdit');
 
@@ -34,7 +35,7 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     useEffect(() => {
         log('useEffect');
         const routeId = match.params.id;
-        const coffee = coffees?.find(c => c._id?.toString() === routeId);
+        const coffee = coffees?.find(c => c._id === routeId);
         setCoffee(coffee);
 
         if(coffee) {
@@ -45,9 +46,10 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
+        log("save", coffee);
         const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular}
             : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
-        saveCoffee && saveCoffee(editedCoffee).then(() => history.goBack());
+        saveCoffee && saveCoffee(editedCoffee);
     };
     log('render');
 
@@ -62,9 +64,9 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
                     <IonLabel>Popular coffee </IonLabel>
                     <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)}/>
                 </IonItemDivider>
-                <IonButtons>
+                <Link to='/coffees'>
                     <IonButton onClick={handleSave}>Save</IonButton>
-                </IonButtons>
+                </Link>
                 <IonLoading isOpen={saving} />
                 {savingError && (
                     <div>{savingError.message || 'Failed to save coffee'}</div>

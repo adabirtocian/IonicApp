@@ -2,7 +2,7 @@ import React from "react";
 import {useAppState} from "../useAppState";
 import {useNetwork} from "../useNetwork";
 import {RouteComponentProps} from "react-router";
-import { Redirect, Route } from 'react-router-dom';
+import {Link, Redirect, Route} from 'react-router-dom';
 import {
     IonPage,
     IonContent,
@@ -12,7 +12,7 @@ import {
     IonTabs,
     IonRouterOutlet,
     IonIcon,
-    IonTabBar, IonTabButton, IonLabel
+    IonTabBar, IonTabButton, IonLabel, IonButton
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
 import {CoffeeList} from "../coffee";

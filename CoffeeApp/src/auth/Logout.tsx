@@ -15,15 +15,17 @@ export const Logout: React.FC<RouteComponentProps> = ({ history}) => {
     (async () => {
         const res = await Storage.get({ key: 'userToken' });
         if (res.value) {
-            console.log('User found', JSON.parse(res.value));
+            log('User found', JSON.parse(res.value));
         } else {
-            console.log('User not found');
+            log('User not found');
         }
     })();
 
     async function handleLogout() {
         await Storage.clear();
+        log("storage cleaned");
     }
+
     return (
         <IonButton onClick={handleLogout}>Logout</IonButton>
     );

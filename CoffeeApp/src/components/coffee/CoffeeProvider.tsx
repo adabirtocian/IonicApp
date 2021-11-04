@@ -50,13 +50,12 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
             case SAVE_COFFEE_SUCCEEDED:
                 const coffees = [...(state.coffees || [])];
                 const coffee = payload.coffee;
-                const index = coffees.findIndex(c => c._id === coffee.id);
+                const index = coffees.findIndex(c => c._id === coffee._id);
                 if(index === -1) {
                     coffees.splice(0, 0, coffee);
                 } else {
                     coffees[index] = coffee;
                 }
-
                 return {...state, coffees, saving: false};
             case SAVE_COFFEE_FAILED:
                 return {...state, savingError: payload.error, saving:false};
@@ -103,8 +102,7 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                 dispatch({type: FETCH_COFFEES_STARTED});
                 const coffees = await getCoffees(token);
                 log('fetchCoffees succeeded');
-                console.log(coffees);
-                console.log(token);
+
                 if(!canceled) {
                     dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees } });
                 }
@@ -119,7 +117,8 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
         try {
             log('saveCoffee started');
             dispatch({type: SAVE_COFFEE_STARTED});
-            const savedCoffee = await (coffee._id !== undefined ? updateCoffee(token, coffee) : createCoffee(token, coffee));
+            log(coffee._id);
+            const savedCoffee = await (coffee._id ? updateCoffee(token, coffee) : createCoffee(token, coffee));
             log('saveCoffee succeeded');
             dispatch({type: SAVE_COFFEE_SUCCEEDED, payload: {coffee: savedCoffee}});
 

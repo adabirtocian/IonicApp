@@ -7,22 +7,28 @@ import {
     IonFab,
     IonFabButton,
     IonIcon,
-    IonCard
+    IonCard, IonRouterOutlet, IonButton
 } from '@ionic/react';
 import Coffee from "./Coffee";
 import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
+import {IonReactRouter} from "@ionic/react-router";
+import {AuthProvider, PrivateRoute} from "../../auth";
+import { Link } from "react-router-dom";
 
 const log = getLogger('CoffeeList');
 
-const CoffeeList: React.FC<RouteComponentProps> = ({history}) => {
+const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) => {
     const {coffees, fetching, fetchingError} = useContext(CoffeeContext);
     log('render');
 
     return (
         <IonPage>
             <IonContent>
+                <Link to='/home'>
+                    <IonButton>Go back</IonButton>
+                </Link>
                 <IonLoading isOpen={fetching} message="Fetching coffees"/>
                 {coffees && coffees.map(({_id, originName, roastedDate, popular}) => {
                     return <IonCard key={`${_id}`}>
@@ -35,8 +41,13 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history}) => {
                 {fetchingError && (
                     <div>{fetchingError.message || 'Failed to fetch coffees'}</div>
                 )}
+
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={() => history.push('/coffee')}>
+                    <IonFabButton onClick={() =>
+                    {
+                        log("add");
+                        history.push('/coffee');
+                    }}>
                         <IonIcon icon={add}/>
                     </IonFabButton>
                 </IonFab>

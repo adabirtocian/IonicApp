@@ -3,8 +3,6 @@ import coffeeStore from './store';
 import { broadcast } from "../utils";
 
 export const router = new Router();
-let getStartIndex = 0
-let getStopIndex = 12
 
 router.get('/', async (ctx) => {
     const response = ctx.response;
@@ -47,27 +45,22 @@ router.post('/', async ctx => await createCoffee(ctx, ctx.request.body, ctx.resp
 router.put('/:id', async (ctx) => {
     const coffee = ctx.request.body;
     const id = ctx.params.id;
-    const coffeeId = coffee._id;
-    const response = ctx.response;
-    if (coffeeId !== id) {
-        response.body = { message: 'Param id and body _id should be the same' };
-        response.status = 400; // bad request
+
+    if (coffee._id !== id) {
+        ctx.response.body = { message: 'Param id and body id should be the same' };
+        ctx.response.status = 400; // bad request
         return;
     }
-    if (coffeeId === undefined) {
-        await createCoffee(ctx, coffee, response);
+    const userId = ctx.state.user._id;
+    coffee.userId = userId;
+    const updatedCount = await coffeeStore.update({ _id: id }, coffee);
+    if (updatedCount === 1) {
+        ctx.response.body = coffee;
+        ctx.response.status = 200; // ok
+        broadcast(userId, { type: 'updated', payload: coffee });
     } else {
-        const userId = ctx.state.user._id;
-        coffee.userId = userId;
-        const updatedCount = await coffeeStore.update({ _id: id }, coffee);
-        if (updatedCount === 1) {
-            response.body = coffee;
-            response.status = 200; // ok
-            broadcast(userId, { type: 'updated', payload: coffee });
-        } else {
-            response.body = { message: 'Resource no longer exists' };
-            response.status = 405; // method not allowed
-        }
+        ctx.response.body = { message: 'Resource no longer exists' };
+        ctx.response.status = 405; // method not allowed
     }
 });
 

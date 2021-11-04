@@ -35,7 +35,7 @@ const App: React.FC = () => (
                         <PrivateRoute component={CoffeeEdit} path="/coffee" exact={true}/>
                         <PrivateRoute component={CoffeeEdit} path="/coffee/:id" exact={true}/>
                     </CoffeeProvider>
-                    <Route exact path="/" render={() => <Redirect to="/coffees"/>} />
+                    <Route exact path="/" render={() => <Redirect to="/home"/>} />
                 </AuthProvider>
             </IonRouterOutlet>
         </IonReactRouter>
