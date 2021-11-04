@@ -20,7 +20,9 @@ const createUser = async (user, response) => {
     }
 };
 
-router.post('/signup', async (ctx) => await createUser(ctx.request.body, ctx.response));
+router.post('/signup', async (ctx) => {
+    await createUser(ctx.request.body, ctx.response)
+});
 
 router.post('/login', async (ctx) => {
     const credentials = ctx.request.body;

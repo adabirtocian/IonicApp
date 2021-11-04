@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppState, Plugins } from '@capacitor/core';
-
-const {App} = Plugins;
+import {App, AppState} from "@capacitor/app";
 
 const initialState = {
   isActive: true,
@@ -20,7 +18,7 @@ export const useAppState = () => {
         }
 
         function handleAppStateChange(state: AppState) {
-            console.log('useAppState - state changed', state);
+            // console.log('useAppState - state changed', state);
             if(!canceled){
                 setAppState(state);
             }

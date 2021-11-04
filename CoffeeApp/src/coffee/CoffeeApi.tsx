@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { authConfig, baseUrl, getLogger, withLogs } from '../core';
+import { authConfig, getLogger, withLogs } from '../core';
 import { CoffeeProps } from './CoffeeProps';
 
+const baseUrl = 'localhost:3000';
 const coffeeUrl = `http://${baseUrl}/api/coffee`;
 
 export const getCoffees: (token: string) => Promise<CoffeeProps[]> = token => {

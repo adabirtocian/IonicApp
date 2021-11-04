@@ -4,6 +4,7 @@ import {IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInpu
 import { RouteComponentProps } from 'react-router';
 import { AuthContext } from './AuthProvider';
 import { getLogger } from '../core';
+import {Storage} from "@capacitor/storage";
 
 const log = getLogger('Login');
 
@@ -21,10 +22,10 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
         login?.(username, password);
     };
     log('render');
+
     if (isAuthenticated) {
         return <Redirect to={{ pathname: '/' }} />
     }
-    // @ts-ignore
     return (
         <IonPage>
             <IonHeader>
@@ -36,10 +37,13 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
                 <IonInput
                     placeholder="Username"
                     value={username}
-                    onIonChange={e => setState({
-                        ...state,
-                        username: e.detail.value || ''
-                    })}/>
+                    onIonChange={e =>{
+                        console.log("change");
+                        setState({
+                            ...state,
+                            username: e.detail.value || ''
+                        })
+                    } }/>
                 <IonInput
                     placeholder="Password"
                     value={password}
@@ -48,9 +52,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
                         password: e.detail.value || ''
                     })}/>
                 <IonLoading isOpen={isAuthenticating}/>
-                {authenticationError && (
-                    <div>{authenticationError.message || 'Failed to authenticate'}</div>
-                )}
+                {authenticationError && (<div>{authenticationError.message || 'Failed to authenticate'}</div>)}
                 <IonButton onClick={handleLogin}>Login</IonButton>
             </IonContent>
         </IonPage>

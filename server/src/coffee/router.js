@@ -3,11 +3,13 @@ import coffeeStore from './store';
 import { broadcast } from "../utils";
 
 export const router = new Router();
+let getStartIndex = 0
+let getStopIndex = 12
 
 router.get('/', async (ctx) => {
     const response = ctx.response;
     const userId = ctx.state.user._id;
-    response.body = await coffeeStore.find({ userId });
+    response.body = (await coffeeStore.find({ userId }));
     response.status = 200; // ok
 });
 

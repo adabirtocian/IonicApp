@@ -2,9 +2,9 @@ import React, { useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../core';
 import { login as loginApi } from './authApi';
+import {Storage} from "@capacitor/storage";
 
 const log = getLogger('AuthProvider');
-
 type LoginFn = (username?: string, password?: string) => void;
 
 export interface AuthState {
@@ -53,6 +53,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             username,
             password
         });
+
+        // (async () => {
+        //     const res = await Storage.get({ key: 'userToken' });
+        //     if (res.value) {
+        //         console.log('User found', JSON.parse(res.value));
+        //     } else {
+        //         console.log('User not found');
+        //     }
+        // })();
     }
 
     function authenticationEffect() {
@@ -63,12 +72,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         async function authenticate() {
+            // const res = await Storage.get({ key: 'userToken' });
+            // if (res.value) {
+            //     setState({
+            //         ...state,
+            //         isAuthenticated: true
+            //     });
+            //     log('User found', JSON.parse(res.value), state.isAuthenticated);
+            //     return;
+            // }
+            // log('User not found');
             if (!pendingAuthentication) {
                 log('authenticate, !pendingAuthentication, return');
                 return;
             }
             try {
-                console.log("----auth");
                 log('authenticate...');
                 setState({
                     ...state,
@@ -87,6 +105,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     isAuthenticated: true,
                     isAuthenticating: false,
                 });
+                // await Storage.set({
+                //     key: 'userToken',
+                //     value: JSON.stringify(token)
+                // });
             } catch (error) {
                 if (canceled) {
                     return;

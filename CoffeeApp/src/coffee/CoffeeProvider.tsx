@@ -1,9 +1,10 @@
-import React, {useCallback, useContext, useEffect, useReducer} from 'react';
+import React, {useCallback, useContext, useEffect, useReducer, useState} from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../core';
 import { CoffeeProps } from './CoffeeProps';
 import { createCoffee, getCoffees, updateCoffee, newWebSocket } from './CoffeeApi';
 import {AuthContext} from "../auth";
+import {IonContent, IonInfiniteScroll, IonInfiniteScrollContent} from "@ionic/react";
 
 const log = getLogger('CoffeeProvider');
 
@@ -100,8 +101,10 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
             try{
                 log('fetchingCoffees started');
                 dispatch({type: FETCH_COFFEES_STARTED});
-                const coffees =await getCoffees(token);
+                const coffees = await getCoffees(token);
                 log('fetchCoffees succeeded');
+                console.log(coffees);
+                console.log(token);
                 if(!canceled) {
                     dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees } });
                 }

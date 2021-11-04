@@ -45,9 +45,8 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
-        console.log(originName, roastedDate, popular);
-        console.log(coffee);
-        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular} : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
+        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular}
+            : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
         saveCoffee && saveCoffee(editedCoffee).then(() => history.goBack());
     };
     log('render');
@@ -69,7 +68,7 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
                 <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY" onIonChange={e => setRoastedDate(e.detail.value || '')} />
                 <IonItemDivider>
                     <IonLabel>Popular coffee </IonLabel>
-                    <IonToggle checked={popular} onIonChange={e => {console.log(e.detail.checked); setPopular(e.detail.checked)} }/>
+                    <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)}/>
                 </IonItemDivider>
                 <IonLoading isOpen={saving} />
                 {savingError && (

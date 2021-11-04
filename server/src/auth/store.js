@@ -1,8 +1,8 @@
 import dataStore from 'nedb-promise';
 
 export class UserStore {
-    constructor({ filename, autoload }) {
-        this.store = dataStore({ filename, autoload });
+    constructor({ filename, autoload}) {
+        this.store = dataStore({ filename, autoload});
     }
 
     async findOne(props) {
@@ -10,8 +10,9 @@ export class UserStore {
     }
 
     async insert(user) {
+        console.log(user);
         return this.store.insert(user);
     };
 }
 
-export default new UserStore({ filename: './db/users.json', autoload: true });
+export default new UserStore({ filename: './db/users.json', autoload: true});
