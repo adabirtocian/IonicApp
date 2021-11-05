@@ -1,13 +1,11 @@
-import React, {useCallback, useContext, useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useReducer} from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 import { createCoffee, getCoffees, updateCoffee, newWebSocket } from './CoffeeApi';
 import {AuthContext} from "../../auth";
-import {IonContent, IonInfiniteScroll, IonInfiniteScrollContent} from "@ionic/react";
 
 const log = getLogger('CoffeeProvider');
-
 type SaveCoffeeFn = (coffee: CoffeeProps) => Promise<any>;
 
 export interface CoffeesState {
@@ -78,7 +76,7 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     useEffect(wsEffect, [token]);
     const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
     const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee };
-    log('returns');
+
     return (
         <CoffeeContext.Provider value={value}>
             {children}
@@ -117,7 +115,6 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
         try {
             log('saveCoffee started');
             dispatch({type: SAVE_COFFEE_STARTED});
-            log(coffee._id);
             const savedCoffee = await (coffee._id ? updateCoffee(token, coffee) : createCoffee(token, coffee));
             log('saveCoffee succeeded');
             dispatch({type: SAVE_COFFEE_SUCCEEDED, payload: {coffee: savedCoffee}});
@@ -130,7 +127,7 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
 
     function wsEffect() {
         let canceled = false;
-        log('wsEffect - connecting');
+        // log('wsEffect - connecting');
         let closeWebSocket: () => void;
         if (token?.trim()) {
             closeWebSocket = newWebSocket(token, message => {
@@ -138,14 +135,14 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                     return;
                 }
                 const { type, payload: coffee } = message;
-                log(`ws message, item ${type}`);
+                // log(`ws message, item ${type}`);
                 if (type === 'created' || type === 'updated') {
                     dispatch({ type: SAVE_COFFEE_SUCCEEDED, payload: { coffee } });
                 }
             });
         }
         return () => {
-            log('wsEffect - disconnecting');
+            // log('wsEffect - disconnecting');
             canceled = true;
             closeWebSocket?.();
         }

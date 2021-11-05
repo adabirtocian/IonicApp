@@ -22,7 +22,6 @@ export class CoffeeStore {
     };
 
     async update(props, coffee) {
-        console.log("update", props, coffee);
         return this.store.update(props, coffee);
     }
 

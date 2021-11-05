@@ -1,15 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
     IonButton,
-    IonButtons,
-    IonContent, IonDatetime,
-    IonHeader,
+    IonContent,
+    IonDatetime,
     IonInput,
     IonLoading,
     IonPage,
-    IonTitle, IonToggle,
-    IonToolbar,
-    IonItem,
+    IonToggle,
     IonLabel,
     IonItemDivider
 } from '@ionic/react';
@@ -17,7 +14,7 @@ import { getLogger } from '../../core';
 import {CoffeeContext} from "./CoffeeProvider";
 import { RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
-import {Link, Redirect} from "react-router-dom";
+import {Link} from "react-router-dom";
 
 const log = getLogger('CoffeeEdit');
 
@@ -33,7 +30,6 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     const [coffee, setCoffee] = useState<CoffeeProps>();
 
     useEffect(() => {
-        log('useEffect');
         const routeId = match.params.id;
         const coffee = coffees?.find(c => c._id === routeId);
         setCoffee(coffee);
@@ -46,7 +42,6 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
-        log("save", coffee);
         const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular}
             : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
         saveCoffee && saveCoffee(editedCoffee);

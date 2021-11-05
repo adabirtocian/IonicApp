@@ -2,15 +2,19 @@ import React, { useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../core';
 import { login as loginApi } from './authApi';
+import {Storage} from "@capacitor/storage";
+import {useHistory} from "react-router";
 
 const log = getLogger('AuthProvider');
 type LoginFn = (username?: string, password?: string) => void;
+type LogoutFn = () => void;
 
 export interface AuthState {
     authenticationError: Error | null | any;
     isAuthenticated: boolean;
     isAuthenticating: boolean;
     login?: LoginFn;
+    logout?: LogoutFn;
     pendingAuthentication?: boolean;
     username?: string;
     password?: string;
@@ -23,6 +27,7 @@ const initialState: AuthState = {
     authenticationError: null,
     pendingAuthentication: false,
     token: '',
+    username: ''
 };
 
 export const AuthContext = React.createContext<AuthState>(initialState);
@@ -32,11 +37,14 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const history = useHistory();
     const [state, setState] = useState<AuthState>(initialState);
-    const { isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication, token } = state;
+    const { isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication, token, username } = state;
     const login = useCallback<LoginFn>(loginCallback, []);
+    const logout = useCallback<LogoutFn>(logoutCallback, []);
     useEffect(authenticationEffect, [pendingAuthentication]);
-    const value = { isAuthenticated, login,  isAuthenticating, authenticationError, token };
+    useEffect(loadUser, []);
+    const value = { isAuthenticated, login, logout,  isAuthenticating, authenticationError, token, username };
     log('render');
     return (
         <AuthContext.Provider value={value}>
@@ -45,7 +53,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     function loginCallback(username?: string, password?: string): void {
-        log('login');
         setState({
             ...state,
             pendingAuthentication: true,
@@ -53,21 +60,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             password
         });
     }
+    function logoutCallback(): void {
+        (async () =>
+            await Storage.remove({key: 'token'}).then(
+                () => {
+                    setState({
+                        ...state,
+                        isAuthenticating: false,
+                        isAuthenticated: false,
+                        authenticationError: null,
+                        token: ''
+                    })
+                })
+        )();
+    }
+
+    function loadUser() {
+        let canceled = false;
+        load();
+        return () => {
+            canceled = true;
+        }
+
+        async function load() {
+            const res = await Storage.get({key: 'token'});
+            if (res.value) {
+                setState({
+                    ...state,
+                    token: res.value,
+                    pendingAuthentication: false,
+                    isAuthenticated: true,
+                    isAuthenticating: false,
+                });
+                history.push('/home');
+            }
+        }
+    }
 
     function authenticationEffect() {
         let canceled = false;
         authenticate();
+
         return () => {
             canceled = true;
         }
 
         async function authenticate() {
             if (!pendingAuthentication) {
-                log('authenticate, !pendingAuthentication, return');
+                log('already authenticated, return');
                 return;
             }
             try {
-                log('authenticate...');
+                log('try to authenticate');
                 setState({
                     ...state,
                     isAuthenticating: true,
@@ -84,7 +128,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     pendingAuthentication: false,
                     isAuthenticated: true,
                     isAuthenticating: false,
+                    username: username
                 });
+                await Storage.set({
+                    key: 'token',
+                    value: token
+                });
+
             } catch (error) {
                 if (canceled) {
                     return;

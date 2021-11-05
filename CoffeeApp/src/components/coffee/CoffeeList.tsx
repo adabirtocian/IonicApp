@@ -7,14 +7,13 @@ import {
     IonFab,
     IonFabButton,
     IonIcon,
-    IonCard, IonRouterOutlet, IonButton
+    IonCard,
+    IonButton
 } from '@ionic/react';
 import Coffee from "./Coffee";
 import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
-import {IonReactRouter} from "@ionic/react-router";
-import {AuthProvider, PrivateRoute} from "../../auth";
 import { Link } from "react-router-dom";
 
 const log = getLogger('CoffeeList');

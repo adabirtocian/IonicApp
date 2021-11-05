@@ -54,6 +54,7 @@ router.put('/:id', async (ctx) => {
     const userId = ctx.state.user._id;
     coffee.userId = userId;
     const updatedCount = await coffeeStore.update({ _id: id }, coffee);
+    console.log(updatedCount);
     if (updatedCount === 1) {
         ctx.response.body = coffee;
         ctx.response.status = 200; // ok

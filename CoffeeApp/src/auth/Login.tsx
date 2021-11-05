@@ -17,13 +17,15 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
     const { isAuthenticated, isAuthenticating, login, authenticationError } = useContext(AuthContext);
     const [state, setState] = useState<LoginState>({});
     const { username, password } = state;
+
     const handleLogin = () => {
-        log('handleLogin...');
+        log('handleLogin');
         login?.(username, password);
     };
     log('render');
 
     if (isAuthenticated) {
+        log(isAuthenticated);
         return <Redirect to={{ pathname: '/home' }} />
     }
     return (
@@ -38,7 +40,6 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
                     placeholder="Username"
                     value={username}
                     onIonChange={e =>{
-                        console.log("change");
                         setState({
                             ...state,
                             username: e.detail.value || ''
