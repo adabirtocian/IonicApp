@@ -21,6 +21,10 @@ export const updateCoffee: (token: string, coffee: CoffeeProps) => Promise<Coffe
     return withLogs(axios.put(`${coffeeUrl}/${coffee._id}`, coffee, authConfig(token)), 'updateCoffee');
 }
 
+export const filterCoffees: (token: string, popularFilter:string | undefined) => Promise<CoffeeProps[]> = (token, popularFilter) => {
+    console.log("API filter", popularFilter);
+    return withLogs(axios.get(`${coffeeUrl}/${popularFilter}`, authConfig(token)), 'filterCoffees');
+}
 interface MessageData {
     type: string;
     payload: CoffeeProps;

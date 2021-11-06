@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext} from "react";
 import {RouteComponentProps} from 'react-router';
 import {
     IonContent,
@@ -10,26 +10,24 @@ import {
     IonCard,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
-    IonButton, IonSearchbar
+    IonButton, IonSearchbar, IonSelect, IonSelectOption
 } from '@ionic/react';
 import Coffee from "./Coffee";
 import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
 import { Link } from "react-router-dom";
-import {CoffeeProps} from "./CoffeeProps";
 
 const log = getLogger('CoffeeList');
 
-const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) => {
-    const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll, originNameSearch, setOriginNameSearch} = useContext(CoffeeContext);
+const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
+    const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll, originNameSearch,
+        setOriginNameSearch, popularFilter, setPopularFilter} = useContext(CoffeeContext);
     log('render');
 
     async function searchNext($event: CustomEvent<void>) {
         log("fetch more");
         fetchMore && fetchMore();
-
-        log(disableInfiniteScroll);
         ($event.target as HTMLIonInfiniteScrollElement).complete();
     }
 
@@ -41,6 +39,12 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) =
                 </Link>
                 <IonSearchbar value={originNameSearch} debounce={1000}
                               onIonChange={(e) => setOriginNameSearch && setOriginNameSearch(e.detail.value!)}/>
+
+                <IonSelect value={popularFilter} placeholder="Select if popular or not"
+                    onIonChange={(e) => setPopularFilter && setPopularFilter(e.detail.value) }>
+                    <IonSelectOption key="popular" value="popular"> Popular </IonSelectOption>
+                    <IonSelectOption key="unpopular" value="unpopular"> Not popular </IonSelectOption>
+                </IonSelect>
                 <IonLoading isOpen={fetching} message="Fetching coffees"/>
                 {coffees &&
                     coffees

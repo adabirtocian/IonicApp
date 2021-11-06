@@ -11,6 +11,20 @@ router.get('/', async (ctx) => {
     response.status = 200; // ok
 });
 
+router.get("/:popular", async (ctx) => {
+    const response = ctx.response;
+    const userId = ctx.state.user._id;
+
+    if(ctx.params.popular !== "undefined") {
+        const popular = ctx.params.popular === "popular";
+        response.body = await coffeeStore.find({userId, popular });
+    }
+    else {
+        response.body = await coffeeStore.find({userId});
+    }
+    response.status = 200; // ok
+});
+
 router.get('/:index/:limit', async (ctx) => {
     console.log(ctx.params.index);
     console.log("limit", ctx.params.limit);
@@ -37,13 +51,13 @@ router.get('/:id', async (ctx) => {
     }
 });
 
-const createCoffee = async (ctx, note, response) => {
+const createCoffee = async (ctx, coffee, response) => {
     try {
         const userId = ctx.state.user._id;
-        note.userId = userId;
-        response.body = await coffeeStore.insert(note);
+        coffee.userId = userId;
+        response.body = await coffeeStore.insert(coffee);
         response.status = 201; // created
-        broadcast(userId, { type: 'created', payload: note });
+        broadcast(userId, { type: 'created', payload: coffee });
     } catch (err) {
         response.body = { message: err.message };
         response.status = 400; // bad request

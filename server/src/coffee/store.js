@@ -6,6 +6,7 @@ export class CoffeeStore {
     }
 
     async find(props) {
+        console.log(props);
         return this.store.find(props);
     }
 

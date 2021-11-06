@@ -1,10 +1,10 @@
-import React, {useCallback, useContext, useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useReducer} from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
-import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees} from './CoffeeApi';
+import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees, filterCoffees} from './CoffeeApi';
 import {AuthContext} from "../../auth";
-import {stat} from "fs";
+
 
 const log = getLogger('CoffeeProvider');
 type SaveCoffeeFn = (coffee: CoffeeProps) => Promise<any>;
@@ -22,6 +22,8 @@ export interface CoffeesState {
     fetchMore?: Function,
     originNameSearch?: string,
     setOriginNameSearch?: Function,
+    popularFilter?: string,
+    setPopularFilter?: Function,
 }
 
 interface ActionProps {
@@ -43,8 +45,12 @@ const SAVE_COFFEE_STARTED = 'SAVE_COFFEE_STARTED';
 const SAVE_COFFEE_SUCCEEDED = 'SAVE_COFFEE_SUCCEEDED';
 const SAVE_COFFEE_FAILED = 'SAVE_COFFEE_FAILED';
 const FETCH_NEXT = 'FETCH_NEXT';
-const SET_INFINITE_SCROLL = "SET_INFINITE_SCROLL ";
+const SET_INFINITE_SCROLL = "SET_INFINITE_SCROLL";
 const SET_NAME_SEARCH = 'SET_NAME_SEARCH';
+const SET_POPULAR_FILTER = 'SET_POPULAR_FILTER';
+const FILTER_COFFEES_STARTED = 'FILTER_COFFEES_STARTED';
+const FILTER_COFFEES_SUCCEEDED = 'FILTER_COFFEES_SUCCEEDED';
+const FILTER_COFFEES_FAILED = 'FILTER_COFFEES_FAILED';
 
 const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
     (state, {type, payload}) => {
@@ -79,6 +85,14 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
                 return {...state, disableInfiniteScroll: payload.disable};
             case SET_NAME_SEARCH:
                 return {...state, originNameSearch: payload.originName}
+            case SET_POPULAR_FILTER:
+                return {...state, coffees: [], index:0, popularFilter: payload.popular}
+            case FILTER_COFFEES_STARTED:
+                return {...state, fetching: true, fetchingError:null};
+            case FILTER_COFFEES_SUCCEEDED:
+                return {...state, coffees: payload.coffees, fetching: false};
+            case FILTER_COFFEES_FAILED:
+                return {...state, fetchingError: payload.error, fetching: false};
             default:
                 return state;
         }
@@ -94,12 +108,13 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     const { token } = useContext(AuthContext);
     const [state, dispatch] = useReducer(reducer, initialState);
     const { coffees, fetching, fetchingError, saving, savingError, index, count, disableInfiniteScroll,
-        originNameSearch} = state;
+        originNameSearch, popularFilter} = state;
     useEffect(getCoffeesEffect, [token, index, count]);
+    useEffect(filterCoffeesEffect, [token, popularFilter]);
     useEffect(wsEffect, [token]);
     const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
     const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee, fetchMore, disableInfiniteScroll,
-        originNameSearch, setOriginNameSearch};
+        originNameSearch, setOriginNameSearch, popularFilter, setPopularFilter};
 
     return (
         <CoffeeContext.Provider value={value}>
@@ -112,8 +127,12 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     }
 
     function setOriginNameSearch(originName: string) {
-        console.log(originName);
         dispatch({type: SET_NAME_SEARCH, payload: {originName}});
+    }
+
+    function setPopularFilter(popular: string) {
+        console.log(popular);
+        dispatch({type: SET_POPULAR_FILTER, payload: {popular}});
     }
 
     function getCoffeesEffect() {
@@ -153,6 +172,32 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
             } catch(error: any) {
                 log('fetchCoffees failed');
                 dispatch({ type: FETCH_COFFEES_FAILED, payload: {error} });
+            }
+        }
+    }
+    function filterCoffeesEffect() {
+        let canceled = false;
+        getFilteredCoffees();
+        return () => {
+            canceled = true;
+        }
+
+        async function getFilteredCoffees() {
+            if(!token?.trim())
+            {
+                return;
+            }
+            try{
+                log('filterCoffees started');
+                dispatch({type: FILTER_COFFEES_STARTED});
+                const coffees = await filterCoffees(token, popularFilter);
+                log('filterCoffees succeeded');
+                if(!canceled) {
+                    dispatch({type: FILTER_COFFEES_SUCCEEDED, payload: {coffees}});
+                }
+            } catch(error: any) {
+                log('filterCoffees failed');
+                dispatch({ type: FILTER_COFFEES_FAILED, payload: {error} });
             }
         }
     }
