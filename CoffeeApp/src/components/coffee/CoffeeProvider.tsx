@@ -1,9 +1,10 @@
-import React, {useCallback, useContext, useEffect, useReducer} from 'react';
+import React, {useCallback, useContext, useEffect, useReducer, useState} from 'react';
 import PropTypes from 'prop-types';
 import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
-import { createCoffee, getCoffees, updateCoffee, newWebSocket } from './CoffeeApi';
+import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees} from './CoffeeApi';
 import {AuthContext} from "../../auth";
+import {stat} from "fs";
 
 const log = getLogger('CoffeeProvider');
 type SaveCoffeeFn = (coffee: CoffeeProps) => Promise<any>;
@@ -15,6 +16,10 @@ export interface CoffeesState {
     saving: boolean,
     savingError?: Error | null,
     saveCoffee?: SaveCoffeeFn,
+    index?: number,
+    count?: number,
+    disableInfiniteScroll?: boolean,
+    fetchMore?: Function
 }
 
 interface ActionProps {
@@ -25,6 +30,8 @@ interface ActionProps {
 const initialState: CoffeesState = {
     fetching: false,
     saving: false,
+    index: 0,
+    count: 11,
 }
 
 const FETCH_COFFEES_STARTED = 'FETCH_COFFEES_STARTED';
@@ -33,6 +40,8 @@ const FETCH_COFFEES_FAILED = 'FETCH_COFFEES_FAILED';
 const SAVE_COFFEE_STARTED = 'SAVE_COFFEE_STARTED';
 const SAVE_COFFEE_SUCCEEDED = 'SAVE_COFFEE_SUCCEEDED';
 const SAVE_COFFEE_FAILED = 'SAVE_COFFEE_FAILED';
+const FETCH_NEXT = 'FETCH_NEXT';
+const SET_INFINITE_SCROLL = "SET_INFINITE_SCROLL ";
 
 const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
     (state, {type, payload}) => {
@@ -40,6 +49,9 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
             case FETCH_COFFEES_STARTED:
                 return {...state, fetching: true, fetchingError:null};
             case FETCH_COFFEES_SUCCEEDED:
+                if(payload.pagination) {
+                    return {...state, coffees: state.coffees ? [...state.coffees, ...payload.coffees]: payload.coffees, fetching: false};
+                }
                 return {...state, coffees: payload.coffees, fetching: false};
             case FETCH_COFFEES_FAILED:
                 return {...state, fetchingError: payload.error, fetching: false};
@@ -57,6 +69,11 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
                 return {...state, coffees, saving: false};
             case SAVE_COFFEE_FAILED:
                 return {...state, savingError: payload.error, saving:false};
+            case FETCH_NEXT:
+                log(state.index);
+                return {...state, index: state.index !== undefined && state.count !== undefined ? state.index+ state.count : undefined};
+            case SET_INFINITE_SCROLL:
+                return {...state, disableInfiniteScroll: payload.disable};
             default:
                 return state;
         }
@@ -71,17 +88,21 @@ interface CoffeeProviderProps {
 export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     const { token } = useContext(AuthContext);
     const [state, dispatch] = useReducer(reducer, initialState);
-    const { coffees, fetching, fetchingError, saving, savingError} = state;
-    useEffect(getCoffeesEffect, [token]);
+    const { coffees, fetching, fetchingError, saving, savingError, index, count, disableInfiniteScroll} = state;
+    useEffect(getCoffeesEffect, [token, index, count]);
     useEffect(wsEffect, [token]);
     const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
-    const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee };
+    const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee, fetchMore, disableInfiniteScroll };
 
     return (
         <CoffeeContext.Provider value={value}>
             {children}
         </CoffeeContext.Provider>
     );
+
+    function fetchMore() {
+        dispatch({type: FETCH_NEXT});
+    }
 
     function getCoffeesEffect() {
         let canceled = false;
@@ -98,11 +119,24 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
             try{
                 log('fetchingCoffees started');
                 dispatch({type: FETCH_COFFEES_STARTED});
-                const coffees = await getCoffees(token);
-                log('fetchCoffees succeeded');
-
-                if(!canceled) {
-                    dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees } });
+                let coffees;
+                log(index, count);
+                if(index !== undefined && count !== undefined) {
+                    coffees = await getSomeCoffees(token, index, count);
+                    log('fetchSomeCoffees succeeded');
+                    if(!canceled) {
+                        dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees, pagination: true } });
+                        if (coffees.length < count) {
+                            dispatch({type: SET_INFINITE_SCROLL, payload: {disable: true}});
+                        }
+                    }
+                }
+                else {
+                    coffees = await getCoffees(token);
+                    log('fetchCoffees succeeded');
+                    if(!canceled) {
+                        dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: {coffees}});
+                    }
                 }
             } catch(error: any) {
                 log('fetchCoffees failed');

@@ -11,6 +11,16 @@ router.get('/', async (ctx) => {
     response.status = 200; // ok
 });
 
+router.get('/:index/:limit', async (ctx) => {
+    console.log(ctx.params.index);
+    console.log("limit", ctx.params.limit);
+    const response = ctx.response;
+    const userId = ctx.state.user._id;
+    const res = (await coffeeStore.find({ userId }))
+    response.body = res.slice(ctx.params.index.valueOf(), ctx.params.index.valueOf() + ctx.params.limit.valueOf());
+    response.status = 200; // ok
+});
+
 router.get('/:id', async (ctx) => {
     const userId = ctx.state.user._id;
     const coffee = await coffeeStore.findOne({ _id: ctx.params.id });

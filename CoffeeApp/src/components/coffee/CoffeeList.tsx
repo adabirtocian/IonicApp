@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useState} from "react";
 import {RouteComponentProps} from 'react-router';
 import {
     IonContent,
@@ -8,6 +8,8 @@ import {
     IonFabButton,
     IonIcon,
     IonCard,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
     IonButton
 } from '@ionic/react';
 import Coffee from "./Coffee";
@@ -15,16 +17,25 @@ import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
 import { Link } from "react-router-dom";
+import {CoffeeProps} from "./CoffeeProps";
 
 const log = getLogger('CoffeeList');
 
 const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) => {
-    const {coffees, fetching, fetchingError} = useContext(CoffeeContext);
+    const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll} = useContext(CoffeeContext);
     log('render');
+
+    async function searchNext($event: CustomEvent<void>) {
+        log("fetch more");
+        fetchMore && fetchMore();
+
+        log(disableInfiniteScroll);
+        ($event.target as HTMLIonInfiniteScrollElement).complete();
+    }
 
     return (
         <IonPage>
-            <IonContent>
+            <IonContent fullscreen>
                 <Link to='/home'>
                     <IonButton>Go back</IonButton>
                 </Link>
@@ -40,7 +51,12 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) =
                 {fetchingError && (
                     <div>{fetchingError.message || 'Failed to fetch coffees'}</div>
                 )}
-
+                <IonInfiniteScroll threshold="30px" disabled={disableInfiniteScroll}
+                                   onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>
+                    <IonInfiniteScrollContent
+                        loadingText="Loading more coffees...">
+                    </IonInfiniteScrollContent>
+                </IonInfiniteScroll>
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton onClick={() =>
                     {

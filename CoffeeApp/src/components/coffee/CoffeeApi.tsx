@@ -9,6 +9,10 @@ export const getCoffees: (token: string) => Promise<CoffeeProps[]> = token => {
     return withLogs(axios.get(coffeeUrl, authConfig(token)), 'getCoffees');
 }
 
+export const getSomeCoffees: (token: string, index: number, limit: number) => Promise<CoffeeProps[]> = (token, index, limit) => {
+    return withLogs(axios.get(`${coffeeUrl}/${index}/${limit}`, authConfig(token)), 'getSomeCoffees');
+}
+
 export const createCoffee: (token: string, coffee: CoffeeProps) => Promise<CoffeeProps[]> = (token, coffee) => {
     return withLogs(axios.post(coffeeUrl, coffee, authConfig(token)), 'createCoffee');
 }

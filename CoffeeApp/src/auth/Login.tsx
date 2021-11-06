@@ -4,7 +4,6 @@ import {IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInpu
 import { RouteComponentProps } from 'react-router';
 import { AuthContext } from './AuthProvider';
 import { getLogger } from '../core';
-import {Storage} from "@capacitor/storage";
 
 const log = getLogger('Login');
 
@@ -25,7 +24,6 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
     log('render');
 
     if (isAuthenticated) {
-        log(isAuthenticated);
         return <Redirect to={{ pathname: '/home' }} />
     }
     return (
@@ -46,6 +44,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history}) => {
                         })
                     } }/>
                 <IonInput
+                    type="password"
                     placeholder="Password"
                     value={password}
                     onIonChange={e => setState({
