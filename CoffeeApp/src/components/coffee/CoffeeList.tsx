@@ -10,7 +10,7 @@ import {
     IonCard,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
-    IonButton
+    IonButton, IonSearchbar
 } from '@ionic/react';
 import Coffee from "./Coffee";
 import {getLogger} from '../../core';
@@ -22,7 +22,7 @@ import {CoffeeProps} from "./CoffeeProps";
 const log = getLogger('CoffeeList');
 
 const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) => {
-    const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll} = useContext(CoffeeContext);
+    const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll, originNameSearch, setOriginNameSearch} = useContext(CoffeeContext);
     log('render');
 
     async function searchNext($event: CustomEvent<void>) {
@@ -39,14 +39,26 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history, location, match}) =
                 <Link to='/home'>
                     <IonButton>Go back</IonButton>
                 </Link>
+                <IonSearchbar value={originNameSearch} debounce={1000}
+                              onIonChange={(e) => setOriginNameSearch && setOriginNameSearch(e.detail.value!)}/>
                 <IonLoading isOpen={fetching} message="Fetching coffees"/>
-                {coffees && coffees.map(({_id, originName, roastedDate, popular}) => {
-                    return <IonCard key={`${_id}`}>
-                        <Coffee key={_id} _id={_id} originName={originName} roastedDate={roastedDate} popular={popular}
-                                onEdit={_id => {
-                                    history.push(`/coffee/${_id}`)
-                                }}/>
-                    </IonCard>
+                {coffees &&
+                    coffees
+                        .filter(originNameSearch && originNameSearch !== ""
+                            ? (coffee) => coffee.originName.indexOf(originNameSearch) >= 0
+                            : (coffee) => coffee)
+                        .map(
+                            ({_id,
+                                 originName,
+                                 roastedDate,
+                                 popular}
+                            ) => {
+                            return <IonCard key={`${_id}`}>
+                                <Coffee key={_id} _id={_id} originName={originName} roastedDate={roastedDate} popular={popular}
+                                        onEdit={_id => {
+                                            history.push(`/coffee/${_id}`)
+                                        }}/>
+                            </IonCard>
                 })}
                 {fetchingError && (
                     <div>{fetchingError.message || 'Failed to fetch coffees'}</div>

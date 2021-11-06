@@ -19,7 +19,9 @@ export interface CoffeesState {
     index?: number,
     count?: number,
     disableInfiniteScroll?: boolean,
-    fetchMore?: Function
+    fetchMore?: Function,
+    originNameSearch?: string,
+    setOriginNameSearch?: Function,
 }
 
 interface ActionProps {
@@ -42,6 +44,7 @@ const SAVE_COFFEE_SUCCEEDED = 'SAVE_COFFEE_SUCCEEDED';
 const SAVE_COFFEE_FAILED = 'SAVE_COFFEE_FAILED';
 const FETCH_NEXT = 'FETCH_NEXT';
 const SET_INFINITE_SCROLL = "SET_INFINITE_SCROLL ";
+const SET_NAME_SEARCH = 'SET_NAME_SEARCH';
 
 const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
     (state, {type, payload}) => {
@@ -74,6 +77,8 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
                 return {...state, index: state.index !== undefined && state.count !== undefined ? state.index+ state.count : undefined};
             case SET_INFINITE_SCROLL:
                 return {...state, disableInfiniteScroll: payload.disable};
+            case SET_NAME_SEARCH:
+                return {...state, originNameSearch: payload.originName}
             default:
                 return state;
         }
@@ -88,11 +93,13 @@ interface CoffeeProviderProps {
 export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     const { token } = useContext(AuthContext);
     const [state, dispatch] = useReducer(reducer, initialState);
-    const { coffees, fetching, fetchingError, saving, savingError, index, count, disableInfiniteScroll} = state;
+    const { coffees, fetching, fetchingError, saving, savingError, index, count, disableInfiniteScroll,
+        originNameSearch} = state;
     useEffect(getCoffeesEffect, [token, index, count]);
     useEffect(wsEffect, [token]);
     const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
-    const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee, fetchMore, disableInfiniteScroll };
+    const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee, fetchMore, disableInfiniteScroll,
+        originNameSearch, setOriginNameSearch};
 
     return (
         <CoffeeContext.Provider value={value}>
@@ -102,6 +109,11 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
 
     function fetchMore() {
         dispatch({type: FETCH_NEXT});
+    }
+
+    function setOriginNameSearch(originName: string) {
+        console.log(originName);
+        dispatch({type: SET_NAME_SEARCH, payload: {originName}});
     }
 
     function getCoffeesEffect() {
