@@ -4,6 +4,7 @@ import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees, filterCoffees} from './CoffeeApi';
 import {AuthContext} from "../../auth";
+import {stat} from "fs";
 
 
 const log = getLogger('CoffeeProvider');
@@ -59,7 +60,8 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
                 return {...state, fetching: true, fetchingError:null};
             case FETCH_COFFEES_SUCCEEDED:
                 if(payload.pagination) {
-                    return {...state, coffees: state.coffees ? [...state.coffees, ...payload.coffees]: payload.coffees, fetching: false};
+                    // log(state.coffees, payload.coffees)
+                    return {...state, coffees: state.coffees ? [...state.coffees, ...payload.coffees] : payload.coffees, fetching: false};
                 }
                 return {...state, coffees: payload.coffees, fetching: false};
             case FETCH_COFFEES_FAILED:
@@ -79,8 +81,8 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
             case SAVE_COFFEE_FAILED:
                 return {...state, savingError: payload.error, saving:false};
             case FETCH_NEXT:
-                log(state.index);
-                return {...state, index: state.index !== undefined && state.count !== undefined ? state.index+ state.count : undefined};
+                // log("next", state.index);
+                return {...state, index: state.index !== undefined && state.count !== undefined ? state.index + state.count : undefined};
             case SET_INFINITE_SCROLL:
                 return {...state, disableInfiniteScroll: payload.disable};
             case SET_NAME_SEARCH:
@@ -148,15 +150,16 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                 return;
             }
             try{
-                log('fetchingCoffees started');
+                log('fetchingSomeCoffees started');
                 dispatch({type: FETCH_COFFEES_STARTED});
                 let coffees;
-                log(index, count);
+                // log("index", index, "count", count);
                 if(index !== undefined && count !== undefined) {
                     coffees = await getSomeCoffees(token, index, count);
                     log('fetchSomeCoffees succeeded');
                     if(!canceled) {
                         dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees, pagination: true } });
+                        // log("after dispatch", state, coffees);
                         if (coffees.length < count) {
                             dispatch({type: SET_INFINITE_SCROLL, payload: {disable: true}});
                         }
@@ -164,13 +167,13 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                 }
                 else {
                     coffees = await getCoffees(token);
-                    log('fetchCoffees succeeded');
+                    log('fetchSomeCoffees succeeded');
                     if(!canceled) {
                         dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: {coffees}});
                     }
                 }
             } catch(error: any) {
-                log('fetchCoffees failed');
+                log('fetchSomeCoffees failed');
                 dispatch({ type: FETCH_COFFEES_FAILED, payload: {error} });
             }
         }
@@ -183,7 +186,7 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
         }
 
         async function getFilteredCoffees() {
-            if(!token?.trim())
+            if(!token?.trim() || popularFilter === undefined)
             {
                 return;
             }

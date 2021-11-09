@@ -76,7 +76,6 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton onClick={() =>
                     {
-                        log("add");
                         history.push('/coffee');
                     }}>
                         <IonIcon icon={add}/>
