@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     isAuthenticated: true,
                     isAuthenticating: false,
                 });
-                history.push('/home');
+                history.push('/coffees');
             }
         }
     }

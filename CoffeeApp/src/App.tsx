@@ -21,7 +21,6 @@ import './theme/variables.css';
 import CoffeeList from "./components/coffee/CoffeeList";
 import CoffeeEdit from "./components/coffee/CoffeeEdit";
 import {AuthProvider, Login, PrivateRoute} from "./auth";
-import Home from "./components/home/Home";
 
 const App: React.FC = () => (
     <IonApp>
@@ -30,12 +29,11 @@ const App: React.FC = () => (
                 <AuthProvider>
                     <Route path="/login" component={Login} exact={true}/>
                     <CoffeeProvider>
-                        <PrivateRoute component={Home} path="/home" exact={true} />
                         <PrivateRoute component={CoffeeList} path="/coffees" exact={true}/>
                         <PrivateRoute component={CoffeeEdit} path="/coffee" exact={true}/>
                         <PrivateRoute component={CoffeeEdit} path="/coffee/:id" exact={true}/>
                     </CoffeeProvider>
-                    <Route exact path="/" render={() => <Redirect to="/home"/>} />
+                    <Route exact path="/" render={() => <Redirect to="/coffees"/>} />
                 </AuthProvider>
             </IonRouterOutlet>
         </IonReactRouter>

@@ -4,7 +4,7 @@ import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees, filterCoffees} from './CoffeeApi';
 import {AuthContext} from "../../auth";
-import {stat} from "fs";
+import {Storage} from "@capacitor/storage";
 
 
 const log = getLogger('CoffeeProvider');
@@ -60,7 +60,6 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
                 return {...state, fetching: true, fetchingError:null};
             case FETCH_COFFEES_SUCCEEDED:
                 if(payload.pagination) {
-                    // log(state.coffees, payload.coffees)
                     return {...state, coffees: state.coffees ? [...state.coffees, ...payload.coffees] : payload.coffees, fetching: false};
                 }
                 return {...state, coffees: payload.coffees, fetching: false};
@@ -81,7 +80,6 @@ const reducer: (state: CoffeesState, action: ActionProps) => CoffeesState =
             case SAVE_COFFEE_FAILED:
                 return {...state, savingError: payload.error, saving:false};
             case FETCH_NEXT:
-                // log("next", state.index);
                 return {...state, index: state.index !== undefined && state.count !== undefined ? state.index + state.count : undefined};
             case SET_INFINITE_SCROLL:
                 return {...state, disableInfiniteScroll: payload.disable};
@@ -138,8 +136,10 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     }
 
     function getCoffeesEffect() {
+        log("getCoffeesEffect");
+        fetchCoffees()
         let canceled = false;
-        fetchCoffees();
+
         return () => {
             canceled = true;
         }
@@ -149,29 +149,46 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
             {
                 return;
             }
-            try{
+            try {
                 log('fetchingSomeCoffees started');
                 dispatch({type: FETCH_COFFEES_STARTED});
                 let coffees;
-                // log("index", index, "count", count);
                 if(index !== undefined && count !== undefined) {
                     coffees = await getSomeCoffees(token, index, count);
                     log('fetchSomeCoffees succeeded');
                     if(!canceled) {
                         dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: { coffees, pagination: true } });
-                        // log("after dispatch", state, coffees);
+                        log('fetchSomeCoffees succeeded dispatch');
                         if (coffees.length < count) {
                             dispatch({type: SET_INFINITE_SCROLL, payload: {disable: true}});
                         }
+                        log("coffees", coffees)
+                        const res = await Storage.get({key: 'coffees'});
+                        let allCoffees: CoffeeProps[] = coffees;
+                        if (res.value) {
+                            console.log(JSON.parse(res.value));
+                            allCoffees = [...coffees, ...JSON.parse(res.value)];
+                            console.log(allCoffees);
+                        }
+                        await Storage.set({
+                            key: 'coffees',
+                            value: JSON.stringify(allCoffees)
+                        });
                     }
                 }
                 else {
+                    log("all");
                     coffees = await getCoffees(token);
                     log('fetchSomeCoffees succeeded');
                     if(!canceled) {
                         dispatch({type: FETCH_COFFEES_SUCCEEDED, payload: {coffees}});
+                        await Storage.set({
+                            key: 'coffees',
+                            value: JSON.stringify(state.coffees)
+                        });
                     }
                 }
+
             } catch(error: any) {
                 log('fetchSomeCoffees failed');
                 dispatch({ type: FETCH_COFFEES_FAILED, payload: {error} });

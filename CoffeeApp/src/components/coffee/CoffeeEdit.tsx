@@ -8,13 +8,14 @@ import {
     IonPage,
     IonToggle,
     IonLabel,
-    IonItemDivider
+    IonItemDivider, IonToolbar, IonTitle, IonButtons, IonHeader
 } from '@ionic/react';
 import { getLogger } from '../../core';
 import {CoffeeContext} from "./CoffeeProvider";
 import { RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
 import {Link} from "react-router-dom";
+import {AuthContext} from "../../auth";
 
 const log = getLogger('CoffeeEdit');
 
@@ -28,6 +29,7 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     const [roastedDate, setRoastedDate] = useState('');
     const [popular, setPopular] = useState(false);
     const [coffee, setCoffee] = useState<CoffeeProps>();
+    const { logout } = useContext(AuthContext);
 
     useEffect(() => {
         const routeId = match.params.id;
@@ -46,10 +48,23 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
             : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
         saveCoffee && saveCoffee(editedCoffee);
     };
+    const handleLogout = () => {
+        log('logout');
+        logout?.();
+    }
+
     log('render');
 
     return (
         <IonPage>
+            <IonHeader>
+                <IonToolbar>
+                    <IonTitle>Welcome !</IonTitle>
+                    <IonButtons slot="end">
+                        <IonButton onClick={handleLogout}>Logout</IonButton>
+                    </IonButtons>
+                </IonToolbar>
+            </IonHeader>
             <IonContent>
                 <IonInput value={originName} placeholder="originName"
                           onIonChange={e => setOriginName(e.detail.value || '')} />

@@ -22,7 +22,6 @@ export const updateCoffee: (token: string, coffee: CoffeeProps) => Promise<Coffe
 }
 
 export const filterCoffees: (token: string, popularFilter:string | undefined) => Promise<CoffeeProps[]> = (token, popularFilter) => {
-    console.log("API filter", popularFilter);
     return withLogs(axios.get(`${coffeeUrl}/${popularFilter}`, authConfig(token)), 'filterCoffees');
 }
 interface MessageData {
@@ -35,17 +34,17 @@ const log = getLogger('ws');
 export const newWebSocket = (token: string, onMessage: (data: MessageData) => void) => {
     const ws = new WebSocket(`ws://${baseUrl}`);
     ws.onopen = () => {
-        log('web socket onopen');
+        // log('web socket onopen');
         ws.send(JSON.stringify({ type: 'authorization', payload: { token } }));
     };
     ws.onclose = () => {
-        log('web socket onclose');
+        // log('web socket onclose');
     };
     ws.onerror = error => {
         log('web socket onerror', error);
     };
     ws.onmessage = messageEvent => {
-        log('web socket onmessage');
+        // log('web socket onmessage');
         onMessage(JSON.parse(messageEvent.data));
     };
     return () => {
