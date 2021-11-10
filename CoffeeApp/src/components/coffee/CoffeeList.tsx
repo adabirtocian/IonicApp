@@ -1,5 +1,7 @@
 import React, {useContext} from "react";
 import {RouteComponentProps} from 'react-router';
+import {useAppState} from "../useAppState";
+import {useNetwork} from "../useNetwork";
 import {
     IonContent,
     IonLoading,
@@ -25,6 +27,8 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
     const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll, originNameSearch,
         setOriginNameSearch, popularFilter, setPopularFilter} = useContext(CoffeeContext);
     const { logout } = useContext(AuthContext);
+    const { appState } = useAppState();
+    const { networkStatus } = useNetwork();
     log('render');
 
     async function searchNext($event: CustomEvent<void>) {
@@ -45,6 +49,8 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                     <IonButtons slot="end">
                         <IonButton onClick={handleLogout}>Logout</IonButton>
                     </IonButtons>
+                    <div>App state: {appState.isActive ? "active" : "not active"}</div>
+                    <div>Network status: { networkStatus.connected ?  "online" : "offline"}</div>
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen>

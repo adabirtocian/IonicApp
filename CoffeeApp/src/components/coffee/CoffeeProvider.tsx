@@ -5,6 +5,7 @@ import { CoffeeProps } from './CoffeeProps';
 import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees, filterCoffees} from './CoffeeApi';
 import {AuthContext} from "../../auth";
 import {Storage} from "@capacitor/storage";
+import {useNetwork} from "../useNetwork";
 
 
 const log = getLogger('CoffeeProvider');
@@ -109,12 +110,29 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { coffees, fetching, fetchingError, saving, savingError, index, count, disableInfiniteScroll,
         originNameSearch, popularFilter} = state;
-    useEffect(getCoffeesEffect, [token, index, count]);
-    useEffect(filterCoffeesEffect, [token, popularFilter]);
-    useEffect(wsEffect, [token]);
+    const { networkStatus } = useNetwork();
     const saveCoffee = useCallback<SaveCoffeeFn>(saveCoffeeCallback, [token]);
     const value = {coffees, fetching, fetchingError, saving, savingError, saveCoffee, fetchMore, disableInfiniteScroll,
         originNameSearch, setOriginNameSearch, popularFilter, setPopularFilter};
+
+    useEffect(getCoffeesEffect, [token, index, count]);
+    useEffect(filterCoffeesEffect, [token, popularFilter]);
+    useEffect(wsEffect, [token]);
+    useEffect(networkReconnectEffect, [networkStatus]);
+
+    function networkReconnectEffect() {
+        if (networkStatus.connected) {
+            console.log("RECONNECTED");
+            (async () => {
+                const res = await Storage.get({key: 'coffees'});
+                if (res.value) {
+                    // console.log("res", JSON.parse(res.value));
+                    let allCoffees = JSON.parse(res.value);
+                    console.log("all", allCoffees);
+                }
+            })();
+        }
+    }
 
     return (
         <CoffeeContext.Provider value={value}>
@@ -162,13 +180,13 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                         if (coffees.length < count) {
                             dispatch({type: SET_INFINITE_SCROLL, payload: {disable: true}});
                         }
-                        log("coffees", coffees)
+                        // log("coffees", coffees)
                         const res = await Storage.get({key: 'coffees'});
                         let allCoffees: CoffeeProps[] = coffees;
                         if (res.value) {
-                            console.log(JSON.parse(res.value));
+                            // console.log("res", JSON.parse(res.value));
                             allCoffees = [...coffees, ...JSON.parse(res.value)];
-                            console.log(allCoffees);
+                            // console.log("all", allCoffees);
                         }
                         await Storage.set({
                             key: 'coffees',
@@ -177,7 +195,6 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
                     }
                 }
                 else {
-                    log("all");
                     coffees = await getCoffees(token);
                     log('fetchSomeCoffees succeeded');
                     if(!canceled) {
@@ -229,7 +246,21 @@ export const CoffeeProvider: React.FC<CoffeeProviderProps> = ({children}) => {
             const savedCoffee = await (coffee._id ? updateCoffee(token, coffee) : createCoffee(token, coffee));
             log('saveCoffee succeeded');
             dispatch({type: SAVE_COFFEE_SUCCEEDED, payload: {coffee: savedCoffee}});
-
+            const res = await Storage.get({key: 'coffees'});
+            let allCoffees: CoffeeProps[];
+            if (res.value) {
+                // console.log("add", JSON.parse(res.value));
+                allCoffees = [savedCoffee, ...JSON.parse(res.value)];
+                // console.log("all", allCoffees);
+            }
+            else {
+                allCoffees = savedCoffee;
+            }
+            await Storage.remove({key: 'coffees'});
+            await Storage.set({
+                key: 'coffees',
+                value: JSON.stringify(allCoffees)
+            });
         } catch(error) {
             log('saveCoffee failed');
             dispatch({type: SAVE_COFFEE_FAILED, payload: { error }});
