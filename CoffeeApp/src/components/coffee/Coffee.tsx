@@ -9,7 +9,7 @@ interface CoffeePropsExt extends  CoffeeProps {
 const Coffee: React.FC<CoffeePropsExt> = ({_id, originName, roastedDate,  popular, onEdit}) => {
     return (
     <IonItem onClick={() => onEdit(_id)}>
-      <IonLabel>{_id} -- {originName} -- roasted  {roastedDate} -- {popular? "popular" : "not popular"} </IonLabel>
+      <IonLabel>{originName} -- roasted  {roastedDate} -- {popular? "popular" : "not popular"} </IonLabel>
     </IonItem>
     );
 };
