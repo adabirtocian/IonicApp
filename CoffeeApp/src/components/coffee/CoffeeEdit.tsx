@@ -1,22 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
     IonButton,
-    IonButtons,
-    IonContent, IonDatetime,
-    IonHeader,
+    IonContent,
+    IonDatetime,
     IonInput,
     IonLoading,
     IonPage,
-    IonTitle, IonToggle,
-    IonToolbar,
-    IonItem,
+    IonToggle,
     IonLabel,
-    IonItemDivider
+    IonItemDivider, IonToolbar, IonTitle, IonButtons, IonHeader
 } from '@ionic/react';
-import { getLogger } from '../core';
+import { getLogger } from '../../core';
 import {CoffeeContext} from "./CoffeeProvider";
 import { RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
+import {Link} from "react-router-dom";
+import {AuthContext} from "../../auth";
 
 const log = getLogger('CoffeeEdit');
 
@@ -30,11 +29,11 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     const [roastedDate, setRoastedDate] = useState('');
     const [popular, setPopular] = useState(false);
     const [coffee, setCoffee] = useState<CoffeeProps>();
+    const { logout } = useContext(AuthContext);
 
     useEffect(() => {
-        log('useEffect');
         const routeId = match.params.id;
-        const coffee = coffees?.find(c => c.id?.toString() === routeId);
+        const coffee = coffees?.find(c => c._id === routeId);
         setCoffee(coffee);
 
         if(coffee) {
@@ -45,32 +44,39 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
-        console.log(originName, roastedDate, popular);
-        console.log(coffee);
-        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular} : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
-        saveCoffee && saveCoffee(editedCoffee).then(() => history.goBack());
+        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular}
+            : { originName: originName, roastedDate: new Date(roastedDate), popular:popular };
+        saveCoffee && saveCoffee(editedCoffee);
     };
+    const handleLogout = () => {
+        log('logout');
+        logout?.();
+    }
+
     log('render');
 
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle>Edit</IonTitle>
+                    <IonTitle>Welcome !</IonTitle>
                     <IonButtons slot="end">
-                        <IonButton onClick={handleSave}>
-                            Save
-                        </IonButton>
+                        <IonButton onClick={handleLogout}>Logout</IonButton>
                     </IonButtons>
                 </IonToolbar>
             </IonHeader>
             <IonContent>
-                <IonInput value={originName} placeholder="originName" onIonChange={e => setOriginName(e.detail.value || '')} />
-                <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY" onIonChange={e => setRoastedDate(e.detail.value || '')} />
+                <IonInput value={originName} placeholder="originName"
+                          onIonChange={e => setOriginName(e.detail.value || '')} />
+                <IonDatetime value={roastedDate} placeholder="roastedDate" displayFormat="MM DD YY"
+                             onIonChange={e => setRoastedDate(e.detail.value || '')} />
                 <IonItemDivider>
                     <IonLabel>Popular coffee </IonLabel>
-                    <IonToggle checked={popular} onIonChange={e => {console.log(e.detail.checked); setPopular(e.detail.checked)} }/>
+                    <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)}/>
                 </IonItemDivider>
+                <Link to='/coffees'>
+                    <IonButton onClick={handleSave}>Save</IonButton>
+                </Link>
                 <IonLoading isOpen={saving} />
                 {savingError && (
                     <div>{savingError.message || 'Failed to save coffee'}</div>
