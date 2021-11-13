@@ -57,7 +57,7 @@ const createCoffee = async (ctx, coffee, response) => {
         coffee.userId = userId;
         response.body = await coffeeStore.insert(coffee);
         response.status = 201; // created
-        broadcast(userId, { type: 'created', payload: coffee });
+        broadcast(userId, { type: 'created', payload: response.body });
     } catch (err) {
         response.body = { message: err.message };
         response.status = 400; // bad request

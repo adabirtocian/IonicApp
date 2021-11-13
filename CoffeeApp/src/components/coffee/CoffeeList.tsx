@@ -18,7 +18,6 @@ import Coffee from "./Coffee";
 import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
-import { Link } from "react-router-dom";
 import {AuthContext} from "../../auth";
 
 const log = getLogger('CoffeeList');
