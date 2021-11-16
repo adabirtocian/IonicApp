@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {RouteComponentProps} from 'react-router';
 import {useAppState} from "../useAppState";
 import {useNetwork} from "../useNetwork";
@@ -12,13 +12,23 @@ import {
     IonCard,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
-    IonButton, IonSearchbar, IonSelect, IonSelectOption, IonToolbar, IonTitle, IonButtons, IonHeader
+    IonButton,
+    IonSearchbar,
+    IonSelect,
+    IonSelectOption,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonHeader
 } from '@ionic/react';
 import Coffee from "./Coffee";
 import {getLogger} from '../../core';
 import {add} from 'ionicons/icons';
 import {CoffeeContext} from "./CoffeeProvider";
-import {AuthContext} from "../../auth";
+import {AuthContext} from "../auth";
+import cardAnimation from "../animations/animations";
+import {NetworkModal} from "../animations/networkModal";
+import {AppStateModal} from "../animations/appStateModal";
 
 const log = getLogger('CoffeeList');
 
@@ -28,12 +38,14 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
     const { logout } = useContext(AuthContext);
     const { appState } = useAppState();
     const { networkStatus } = useNetwork();
+    useEffect(cardAnimation, []);
     log('render');
 
     async function searchNext($event: CustomEvent<void>) {
         log("fetch more");
         fetchMore && fetchMore();
         ($event.target as HTMLIonInfiniteScrollElement).complete();
+        cardAnimation();
     }
     const handleLogout = () => {
         log('logout');
@@ -48,8 +60,10 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                     <IonButtons slot="end">
                         <IonButton onClick={handleLogout}>Logout</IonButton>
                     </IonButtons>
-                    <div>App state: {appState.isActive ? "active" : "not active"}</div>
-                    <div>Network status: { networkStatus.connected ?  "online" : "offline"}</div>
+                    <IonButtons slot="start">
+                        <NetworkModal/>
+                        <AppStateModal/>
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen>
@@ -74,7 +88,7 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                                  popular,
                                  photo}
                             ) => {
-                            return <IonCard key={`${_id}`}>
+                            return <IonCard key={`${_id}`} className="coffee-card">
                                 <Coffee key={_id}
                                         _id={_id}
                                         originName={originName}

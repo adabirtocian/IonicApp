@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import {IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonLoading} from '@ionic/react';
 import { RouteComponentProps } from 'react-router';
 import { AuthContext } from './AuthProvider';
-import { getLogger } from '../core';
+import { getLogger } from '../../core';
 
 const log = getLogger('Login');
 

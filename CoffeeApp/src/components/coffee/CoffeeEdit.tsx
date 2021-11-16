@@ -15,9 +15,9 @@ import {CoffeeContext} from "./CoffeeProvider";
 import {RouteComponentProps} from "react-router";
 import {CoffeeProps} from "./CoffeeProps";
 import {Link} from "react-router-dom";
-import {AuthContext} from "../../auth";
+import {AuthContext} from "../auth";
 import {camera} from 'ionicons/icons';
-import {usePhotoGallery} from "../usePhotoGallery";
+import {usePhotoGallery} from "../camera/usePhotoGallery";
 
 const log = getLogger('CoffeeEdit');
 
