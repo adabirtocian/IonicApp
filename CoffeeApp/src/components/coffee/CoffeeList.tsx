@@ -71,10 +71,16 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                             ({_id,
                                  originName,
                                  roastedDate,
-                                 popular}
+                                 popular,
+                                 photo}
                             ) => {
                             return <IonCard key={`${_id}`}>
-                                <Coffee key={_id} _id={_id} originName={originName} roastedDate={roastedDate} popular={popular}
+                                <Coffee key={_id}
+                                        _id={_id}
+                                        originName={originName}
+                                        roastedDate={roastedDate}
+                                        popular={popular}
+                                        photo={photo}
                                         onEdit={_id => {
                                             history.push(`/coffee/${_id}`)
                                         }}/>
