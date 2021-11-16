@@ -16,7 +16,7 @@ export function usePhotoGallery() {
     // const {getPhoto} = useCamera();
     const [photos, setPhotos] = useState<Photo[]>([]);
 
-    const takePhoto = async () => {
+    const takePhoto = async (): Promise<string> => {
         const cameraPhoto = await Camera.getPhoto({
             resultType: CameraResultType.Uri,
             source: CameraSource.Camera,
@@ -27,7 +27,7 @@ export function usePhotoGallery() {
         const newPhotos = [savedFileImage, ...photos];
         setPhotos(newPhotos);
         set(PHOTO_STORAGE, JSON.stringify(newPhotos));
-        // return await base64FromPath(cameraPhoto.webPath!);
+        return await base64FromPath(cameraPhoto.webPath!);
     };
 
     const {readFile, writeFile} = useFilesystem();

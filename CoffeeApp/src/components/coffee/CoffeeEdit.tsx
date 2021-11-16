@@ -54,6 +54,7 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
         const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular, photo}
             : {originName: originName, roastedDate: new Date(roastedDate), popular: popular, photo: photo};
         saveCoffee && saveCoffee(editedCoffee);
+        console.log(editedCoffee);
     };
     const handleLogout = () => {
         log('logout');
@@ -89,7 +90,10 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
                 </IonItemDivider>
                 {photo && <IonImg src={photo}/>}
                 <IonFab vertical="bottom" horizontal="center" slot="fixed">
-                    <IonFabButton onClick={() => takePhoto()}>
+                    <IonFabButton onClick={async () => {
+                        const image = await takePhoto();
+                        setPhoto(image);
+                    }}>
                         <IonIcon icon={camera}/>
                     </IonFabButton>
                 </IonFab>
