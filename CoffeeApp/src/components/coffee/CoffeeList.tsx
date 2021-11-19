@@ -36,13 +36,10 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
     const { coffees, fetching, fetchingError, fetchMore, disableInfiniteScroll, originNameSearch,
         setOriginNameSearch, popularFilter, setPopularFilter} = useContext(CoffeeContext);
     const { logout } = useContext(AuthContext);
-    const { appState } = useAppState();
-    const { networkStatus } = useNetwork();
     useEffect(cardAnimation, []);
     log('render');
 
     async function searchNext($event: CustomEvent<void>) {
-        log("fetch more");
         fetchMore && fetchMore();
         ($event.target as HTMLIonInfiniteScrollElement).complete();
         cardAnimation();
@@ -86,7 +83,9 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                                  originName,
                                  roastedDate,
                                  popular,
-                                 photo}
+                                 photo,
+                                lat,
+                                lng}
                             ) => {
                             return <IonCard key={`${_id}`} className="coffee-card">
                                 <Coffee key={_id}
@@ -95,6 +94,8 @@ const CoffeeList: React.FC<RouteComponentProps> = ({history }) => {
                                         roastedDate={roastedDate}
                                         popular={popular}
                                         photo={photo}
+                                        lat={lat}
+                                        lng={lng}
                                         onEdit={_id => {
                                             history.push(`/coffee/${_id}`)
                                         }}/>

@@ -18,6 +18,7 @@ import {Link} from "react-router-dom";
 import {AuthContext} from "../auth";
 import {camera} from 'ionicons/icons';
 import {usePhotoGallery} from "../camera/usePhotoGallery";
+import {MyMap} from "../map/MyMap";
 
 const log = getLogger('CoffeeEdit');
 
@@ -33,6 +34,9 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
     const [popular, setPopular] = useState(false);
     const [coffee, setCoffee] = useState<CoffeeProps>();
     const [photo, setPhoto] = useState('');
+    const [lat, setLat] = React.useState(46.7524289);
+    const [lng, setLng] = React.useState(23.5872008);
+    const [openMap, setOpenMap] = React.useState(false);
     const {takePhoto} = usePhotoGallery();
 
     const {logout} = useContext(AuthContext);
@@ -47,14 +51,18 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
             setPopular(coffee.popular);
             setRoastedDate(coffee.roastedDate.toString());
             setPhoto(coffee.photo);
+
+            if(coffee.lng && coffee.lat) {
+                setLat(coffee.lat);
+                setLng(coffee.lng);
+            }
         }
     }, [match.params.id, coffees]);
 
     const handleSave = () => {
-        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular, photo}
-            : {originName: originName, roastedDate: new Date(roastedDate), popular: popular, photo: photo};
+        const editedCoffee = coffee ? {...coffee, originName, roastedDate: new Date(roastedDate), popular, photo, lat, lng}
+            : {originName: originName, roastedDate: new Date(roastedDate), popular: popular, photo: photo, lat: lat, lng: lng};
         saveCoffee && saveCoffee(editedCoffee);
-        console.log(editedCoffee);
     };
     const handleLogout = () => {
         log('logout');
@@ -89,10 +97,27 @@ const CoffeeEdit: React.FC<CoffeeEditProps> = ({history, match}) => {
                     <IonToggle checked={popular} onIonChange={e => setPopular(e.detail.checked)}/>
                 </IonItemDivider>
                 {photo && <IonImg src={photo}/>}
+                <IonButton onClick={() => setOpenMap(!openMap)}>Toggle Map</IonButton>
+                {openMap &&
+                <MyMap
+                    lat={lat}
+                    lng={lng}
+                    onMapClick={(e: any) => {
+
+                        setLat(e.latLng.lat());
+                        setLng(e.latLng.lng());
+                    }}
+                />}
                 <IonFab vertical="bottom" horizontal="center" slot="fixed">
                     <IonFabButton onClick={async () => {
-                        const image = await takePhoto();
-                        setPhoto(image);
+                        try {
+                            const image = await takePhoto();
+                            setPhoto(image);
+                        } catch(e)
+                        {
+                            console.log("Camera closed");
+                        }
+
                     }}>
                         <IonIcon icon={camera}/>
                     </IonFabButton>
