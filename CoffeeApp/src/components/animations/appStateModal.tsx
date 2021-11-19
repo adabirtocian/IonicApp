@@ -31,7 +31,7 @@ export const AppStateModal: React.FC = () => {
 
     return (
         <>
-            <IonModal isOpen={showModal} enterAnimation={enterAnimation} leaveAnimation={leaveAnimation}>
+            <IonModal isOpen={showModal} enterAnimation={enterAnimation} leaveAnimation={leaveAnimation} onDidDismiss={() => setShowModal(false)}>
                 <div>App state: {appState.isActive ? "active" : "not active"}</div>
                 <IonButton onClick={() => setShowModal(false)}>Close</IonButton>
             </IonModal>

@@ -31,7 +31,7 @@ export const NetworkModal: React.FC = () => {
 
     return (
         <>
-            <IonModal isOpen={showModal} enterAnimation={enterAnimation} leaveAnimation={leaveAnimation}>
+            <IonModal isOpen={showModal} enterAnimation={enterAnimation} leaveAnimation={leaveAnimation} onDidDismiss={() => setShowModal(false)}>
                 <div>Network status: { networkStatus.connected ?  "online" : "offline"}</div>
                 <div>Connection: { networkStatus.connectionType }</div>
                 <IonButton onClick={() => setShowModal(false)}>Close Modal</IonButton>
