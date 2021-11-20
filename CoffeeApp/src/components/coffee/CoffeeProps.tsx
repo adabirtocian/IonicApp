@@ -3,4 +3,7 @@ export interface CoffeeProps {
     originName: string;
     roastedDate: Date;
     popular: boolean;
+    photo: string;
+    lng?:number;
+    lat?:number;
 }

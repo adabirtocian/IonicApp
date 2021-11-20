@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { getLogger } from '../core';
+import { getLogger } from '../../core';
 import { login as loginApi } from './authApi';
 import {Storage} from "@capacitor/storage";
 import {useHistory} from "react-router";

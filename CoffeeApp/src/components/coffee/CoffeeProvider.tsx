@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getLogger } from '../../core';
 import { CoffeeProps } from './CoffeeProps';
 import {createCoffee, getCoffees, updateCoffee, newWebSocket, getSomeCoffees, filterCoffees} from './CoffeeApi';
-import {AuthContext} from "../../auth";
+import {AuthContext} from "../auth";
 import {Storage} from "@capacitor/storage";
 
 const log = getLogger('CoffeeProvider');

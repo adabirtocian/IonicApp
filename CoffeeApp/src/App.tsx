@@ -20,7 +20,7 @@ import '@ionic/react/css/display.css';
 import './theme/variables.css';
 import CoffeeList from "./components/coffee/CoffeeList";
 import CoffeeEdit from "./components/coffee/CoffeeEdit";
-import {AuthProvider, Login, PrivateRoute} from "./auth";
+import {AuthProvider, Login, PrivateRoute} from "./components/auth";
 
 const App: React.FC = () => (
     <IonApp>
